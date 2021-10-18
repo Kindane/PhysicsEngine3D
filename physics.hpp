@@ -15,26 +15,14 @@ namespace physics {
     };
 
     struct physics_object {
-        physics_model &model;
-        glm::vec3 velocity;
-        glm::vec3 position;
-        glm::quat rotate;
-        glm::quat angleVelocity;
-        float mass;
-        float elasticity;
-        glm::vec3 acceleration;
-        physics_object(physics_model &model, glm::vec3 position, glm::vec3 velocity,
-                       glm::vec3 acceleration, glm::quat rotate,
-                       glm::quat angleVelocity, float mass, float elasticity)
-            : model(model) {
-            this->position = position;
-            this->velocity = velocity;
-            this->rotate = rotate;
-            this->angleVelocity = angleVelocity;
-            this->mass = mass;
-            this->elasticity = elasticity;
-            this->acceleration = acceleration;
-        }
+            physics_model &model;
+            glm::vec3 position;
+            glm::vec3 velocity;
+            glm::vec3 acceleration;
+            glm::quat rotate;
+            glm::quat angleVelocity;
+            float mass;
+            float elasticity;
     };
 
     // load model from .stl file
@@ -43,18 +31,16 @@ namespace physics {
         for (size_t itri = 0; itri < mesh.num_tris(); ++itri) {
             for (size_t icorner = 0; icorner < 3; ++icorner) {
                 const float *c = mesh.tri_corner_coords(itri, icorner);
-                physics::triangle temp(c[0], c[1], c[2]);
-                model.faces.push_back(temp);
+                model.faces.push_back(physics::triangle(c[0], c[1], c[2]));
             }
         }
     }
 
     // Move object
+    // timestamp = 1/fps
     void advance_step(physics_object &object, float timestamp) {
-        glm::vec3 tmp = object.acceleration;
-        tmp /= 2;
-        tmp *= std::pow(timestamp, 2);
-        object.position += (object.velocity * timestamp + tmp);
+        // x = x0 + V0x*t + a * t^2 * 0.5
+        object.position += (object.velocity * timestamp + object.acceleration * timestamp * timestamp * 0.5f);
     }
 
     // resolve collision of two objects
